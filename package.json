@@ -2,9 +2,7 @@
   "name": "secrets-engine-example",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=22"
-  },
+  "engines": { "node": ">=22" },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build --config vite.demo.config.ts && tsx scripts/build-islands.ts",

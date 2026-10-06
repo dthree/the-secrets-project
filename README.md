@@ -10,6 +10,21 @@ Your browser sends small batches of interactions to the server, where the engine
 
 Even with the secrets redacted, would you believe this thing still runs? There’s a small working demo tucked inside, with a made-up secret that lets you watch the machinery work without spoiling the real ones.
 
+## Run the example
+
+With Node.js 22 or newer installed, run:
+
+```sh
+npm ci
+npm run build
+npm test
+npm start
+```
+
+Open [the local demo](http://127.0.0.1:5178), type `example`, and submit it. The server reveals the contribution, its stylesheet and its island for your session. Refresh to keep the discovery, or choose **Start over** to clear it. Restarting the server clears every demo session.
+
+The [example secret guide](src/secrets/999999-example/README.md) explains the current file layout, required fields, optional configuration and storage boundaries. The exported [TypeScript types](src/shared/secret.ts) are the schema reference; this demo uses the same registry, evaluator and composer as the site, with a small local server adapter.
+
 ## License
 
 [MIT](LICENSE)

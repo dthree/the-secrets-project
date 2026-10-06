@@ -74,14 +74,22 @@ export const compose = (
     }
   }
 
+  const entries: NonNullable<SlotRenderer['entries']> = (name) => {
+    const out: Array<ReturnType<NonNullable<SlotRenderer['entries']>>[number]> = [];
+    if (!declared.has(name)) return out;
+
+    for (const s of secrets) {
+      for (const c of s.module.contributions ?? []) {
+        if (c.kind !== 'render' || c.slot !== name) continue;
+        const held = unlocked.has(s.manifest.n);
+        out.push({ n: s.manifest.n, priority: c.priority, held, ...(held ? { css: s.css } : {}) });
+      }
+    }
+    return out.sort((a, b) => a.priority - b.priority || a.n - b.n);
+  };
   const renderer = (depth: number): SlotRenderer => Object.assign(
     (name: string, owner?: number) => renderAt(name, depth, owner),
-    { entries: (name: string) => !declared.has(name) ? [] : secrets.flatMap((s) =>
-      (s.module.contributions ?? []).flatMap((c) => c.kind === 'render' && c.slot === name
-        ? [{ n: s.manifest.n, priority: c.priority, held: unlocked.has(s.manifest.n),
-          ...(unlocked.has(s.manifest.n) ? { css: s.css } : {}) }]
-        : []),
-    ).sort((a, b) => a.priority - b.priority || a.n - b.n) },
+    { entries },
   );
   const renderAt = (name: string, depth: number, owner?: number): ReactNode => {
     if (depth > MAX_DEPTH) { return null; }

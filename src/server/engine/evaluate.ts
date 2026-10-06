@@ -150,16 +150,19 @@ export const evaluateReveals = (
 ): Array<{ n: number; at: number }> => {
   const channels = channelsInWindow(window);
   let localDate: Date | null | undefined;
-  return secrets.flatMap(({ manifest, module }) => {
+  const out: Array<{ n: number; at: number }> = [];
+  for (const { manifest, module } of secrets) {
     if (!module.reveal || unlocked.has(manifest.n) || isRevealed(durable, manifest.n)
       || !manifest.channels.some(c => channels.has(c))
       || module.requires?.some(n => !unlocked.has(n))
       || (module.recurs && !opts.ignoreRecurrence && !recurrenceMet(module.recurs,
-        localDate === undefined ? (localDate = calendarDate(now, window.timezoneOffset)) : localDate))) { return []; }
+        localDate === undefined ? (localDate = calendarDate(now, window.timezoneOffset)) : localDate))) { continue; }
     try {
       const at = module.reveal.detect({ window, unlocked, now, durable, tagged });
-      return at !== null && Number.isFinite(at) && at > 0 && at <= now.getTime()
-        ? [{ n: manifest.n, at }] : [];
-    } catch { return []; }
-  });
+      if (at !== null && Number.isFinite(at) && at > 0 && at <= now.getTime()) {
+        out.push({ n: manifest.n, at });
+      }
+    } catch {                                                  }
+  }
+  return out;
 };
