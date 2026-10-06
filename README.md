@@ -8,7 +8,7 @@ Each secret lives in its own module, carrying its detection rules and the pieces
 
 Your browser sends small batches of interactions to the server, where the engine routes them to the relevant detectors and checks their prerequisites. When something unlocks, the server composes the newly available pieces into your page. Interactive code is built into separate, self-contained bundles called *islands*, which are delivered when you have access to them. The same system ties together recognizing an action, remembering a discovery, changing the interface and admitting the next piece of code—all while keeping the rules for undiscovered secrets on the server, where Inspect Element can express its disappointment.
 
-Even with the secrets redacted, would you believe this thing still runs? There’s a tiny working demo tucked inside, with one made-up secret so you can watch the machinery work without spoiling the real ones.
+Even with the secrets redacted, would you believe this thing still runs? There’s a small working demo tucked inside, with a made-up secret that lets you watch the machinery work without spoiling the real ones.
 
 ## License
 
