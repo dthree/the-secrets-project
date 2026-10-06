@@ -22,6 +22,19 @@ export const CORE_SLOTS = [
 
 const MAX_DEPTH = 12;
 
+export const lazyModel = (build: () => Model): Model => {
+  let model: Model | undefined;
+  const get = () => model ??= build();
+  return {
+    get declared() { return get().declared; },
+    slot: Object.assign(
+      (name: string, owner?: number) => get().slot(name, owner),
+      { entries: (name: string) => get().slot.entries?.(name) ?? [] },
+    ),
+    one: (contribution) => get().one(contribution),
+  };
+};
+
 export const compose = (
   pool: Secret[],
   unlocked: ReadonlySet<number>,

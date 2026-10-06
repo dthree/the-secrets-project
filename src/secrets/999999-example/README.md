@@ -1,6 +1,19 @@
 # Example secret
 
-This synthetic secret demonstrates the current authoring format without including any of the site's discoveries. Run the demo from the [repository README](../../../README.md), then read [manifest.ts](manifest.ts) and [secret.tsx](secret.tsx) alongside the exported [schema](../../shared/secret.ts).
+These two synthetic secrets demonstrate the current authoring format without including any of the site's discoveries. Run the demo from the [repository README](../../../README.md), then type `example` and turn the revealed machine's handle three times. Try `demo` first for near-miss feedback, and refresh after a turn to see the saved counter.
+
+| Working feature | Where to read it |
+| --- | --- |
+| Public teaser, root hint and an outward hint edge | [manifest.ts](manifest.ts) |
+| Typed detection, near-miss copy and declaration of a nested slot | [secret.tsx](secret.tsx) |
+| A real button, reduced-motion-aware animation and a neutral interaction report | [island.tsx](island.tsx) |
+| Responsive machine styling, delivered only after discovery | [style.css](style.css) |
+| A second input channel and separate teaser | [sunrise manifest](../999998-sunrise/manifest.ts) |
+| A prerequisite, a server-owned threshold, a reward and a contribution inside another secret | [sunrise definition](../999998-sunrise/secret.tsx) |
+| An earned scene and reduced-motion-aware sunrise | [sunrise stylesheet](../999998-sunrise/style.css) |
+| Saved state, ordered idempotent commands, reward commitment and complete reset | [demo server](../../../demo/server.tsx) |
+
+The exported [schema](../../shared/secret.ts) remains the field reference. These are working examples of its mechanisms, with a small in-memory adapter replacing production storage.
 
 ## Files and registration
 
@@ -12,9 +25,9 @@ src/secrets/999999-example/
   style.css     Optional stylesheet delivered with the earned markup
 ```
 
-The [registry](../../server/engine/registry.ts) discovers these folders at startup. A definition can be `secret.ts` when it contains no JSX; if both files exist, `secret.tsx` wins. The manifest's `n` is the identity used by prerequisites and delivery, and must be unique. The folder prefix is an organizing convention, so keep it aligned with `n`. The large example number belongs only to this demo.
+The [registry](../../server/engine/registry.ts) discovers these folders at startup. A definition can be `secret.ts` when it contains no JSX; if both files exist, `secret.tsx` wins. The manifest's `n` is the identity used by prerequisites and delivery, and must be unique. The folder prefix is an organizing convention, so keep it aligned with `n`. Both large example numbers belong only to this demo.
 
-The registry detects `island.tsx` and fills `hasIsland` automatically. The island builder emits `dist/islands/999999.js`, and the demo admits `/i/999999` only for the session that earned it. Do not serve the build directory as public static files. The rendered `data-island="999999"` host lets the demo client mount the default export. A contribution to `home.center` uses an existing shell slot; declare additional slots through `declaresSlots` only when their host actually renders them.
+The registry detects `island.tsx` and fills `hasIsland` automatically. The island builder emits `dist/islands/999999.js`, and the demo admits `/i/999999` only for the session that earned it. Do not serve the build directory as public static files. The rendered `data-island="999999"` host lets the demo client mount the default export. The sunrise has no island because its earned markup and CSS supply its whole presentation. A contribution to `home.center` uses an existing shell slot; declare additional slots through `declaresSlots` only when their host actually renders them.
 
 The production system also supports optional server route handlers and appearance bootstraps. Their production routing, identity and storage integration is redacted from this repository; adding a route declaration here does not install a handler in the demo.
 
@@ -26,7 +39,7 @@ The production system also supports optional server route handlers and appearanc
 | --- | --- |
 | `n` | Required unique integer identity. |
 | `teaser` | Required nonempty public label, authored in Title Case. Use the exact canonical name when no separate teaser is intended. Missing, null, empty and whitespace-only values are rejected. |
-| `channels` | Required input channels consumed by the detector, drawn from `Channel` in [events.ts](../../shared/events.ts). This example consumes `key`. |
+| `channels` | Required input channels consumed by the detector, drawn from `Channel` in [events.ts](../../shared/events.ts). The machine consumes `key`; the sunrise consumes `report`. |
 | `medal` | Required authored rarity: `bronze`, `silver`, `gold` or `platinum`. |
 | `rootHint` / `rootFigure` | Optional public entrance hint; choose at most one. A figure includes SVG and a click code. |
 | `hintsUnlocked` | Optional outward hints made available by earning this secret. Each names another existing secret number and exactly one of `text` or `figure`. |
@@ -55,24 +68,26 @@ The exported `SecretModule` type contains the full field shapes. These optional 
 | Pages and navigation | `pages`, `navigateTo`, `arrivalUnlocks`, `pasteable`, `chromeEdge` and `gameMode` describe destinations and their presentation. Page metadata alone grants no access. |
 | Public visitors | `publicVisitorMode`, `publicVisitorPaths` and `publicVisitorRoutes` declare admission and narrow read/play capabilities. Every game requires complete `play` admission; `publicExcept` is limited to non-game prize pages. Production admission and invitation handling are outside this demo. |
 | Release visibility | `developmentOnly` excludes a definition unless `NODE_ENV=development`. `creatorsOnly` requires production creator-aware admission and public-list filtering, which the demo does not implement. It is independent of a game's public-play configuration. |
-| Inventory and rewards | `uses` requires reusable equipment, `consumes` spends an item and `grants` declares an authored reward. These require the production atomic storage/reward adapter; the demo does not apply them. |
+| Inventory and rewards | `uses` requires reusable equipment, `consumes` spends an item and `grants` declares an authored reward. The demo implements bounded `grants.money` as fictional demo tokens; it rejects inventory configuration at startup. Production uses its atomic storage/reward adapter. |
 | Attribution and sharing | `credits` carries earned cultural acknowledgments or licensed-resource notices; `share` describes an approved share artifact. Their disclosure and rendering adapters remain private. |
 | Interaction feedback | `interactionFeedback` declares advisory feedback for an admitted interaction, with no reward authority. Its production delivery adapter is omitted here. |
 
-The demo exercises detection, ownership, composition, stylesheet delivery and island admission. It does not render every optional metadata field or supply the production hint, page, inventory, sharing or account systems. Leave optional fields out when the example does not use them; declaring an unsupported field does not implement its behavior.
+The demo exercises detection, near misses, text hints, ownership, nested composition, stylesheet delivery, island admission, a server-owned counter and one-time `grants.money` rewards. It does not supply the production page, inventory, sharing or account systems. Leave optional fields out when the example does not use them; declaring an unsupported field does not implement its behavior.
 
 ## Definitions, discoveries and saved progress
 
 Definitions live in source files, while a visitor's discoveries and other progress live in server-owned storage. A manifest is not a save file, and an island cannot grant itself ownership by writing browser state.
 
-The [demo server](../../../demo/server.tsx) keeps an expiring session with a `Set<number>` of discoveries in memory. Its HttpOnly cookie identifies the session, while the server evaluates input and records the result. Refresh retains progress until the session expires; restarting the process loses it. The store admits at most 1,000 sessions, expires them after 30 minutes and limits each session to 60 input submissions per minute. Inputs are capped at 128 characters and request bodies at 4 KiB. This is a bounded loopback demonstration, not a production persistence or capacity model.
+The [demo server](../../../demo/server.tsx) keeps an expiring session with a `Set<number>` of discoveries and a `Durable` snapshot in memory. The machine reports every handle activation through `secrets:report`; the adapter checks ownership and increments `durable.tally`, while the second secret alone supplies the winning threshold and reward. Its HttpOnly cookie identifies the session, while the server evaluates input and records the result. Refresh retains progress until the session expires; restarting the process loses it. The store admits at most 1,000 sessions, expires them after 30 minutes and limits each session to 60 input submissions per minute. Word inputs are capped at 128 characters, reports at 64 characters, the turn counter at 1,000 and request bodies at 4 KiB. This is a bounded loopback demonstration, not a production persistence or capacity model.
 
 The production persistence adapter is intentionally absent. It supplies owner-scoped discovery records and durable snapshots to the same engine. New durable profile progress belongs in its reset registry; other owner-scoped database rows and Redis state register with `storage.onReset`. Browser saves use the shared storage reset and write fence. Production writes must validate ownership and eligibility, use server-authored amounts, commit coupled rewards atomically, deduplicate retries and reject work from before the owner's reset. These mechanisms must be integrated before a new persistent feature is complete.
 
-In the demo, **Start over** deletes the old session and issues a new identifier. Old requests can no longer restore its discovery, island access disappears, and another visitor's progress is unaffected. The client also ignores responses from an earlier reset generation. Submitted input can be fabricated, so accepting the synthetic word is a discovery rule, not proof of human play.
+Each command carries a session scope and consecutive sequence. The server retains only the last command signature: an identical retry returns current state, while an older, conflicting or out-of-order command is refused. Discovery, counter and token balance commit together without yielding in this single process; concurrent retries cannot double the reward. A real multi-process store needs a transaction and owner lock.
+
+In the demo, **Start over** deletes the old session, including its counter and reward balance, and issues a new identifier and scope. Old requests can no longer restore its discovery, island access disappears, and another visitor's progress is unaffected. The client also ignores responses from an earlier reset generation, and the server rejects old scopes even when a stale tab sends the replacement cookie. Submitted input can be fabricated, so accepting words or handle reports is a discovery rule, not proof of human play.
 
 ## Verify a change
 
-Run `npm run build` and `npm test` from the repository root after editing. Typechecking checks the example against the exported schema, and the HTTP checks exercise valid discovery, forged ownership, locked delivery, repeated input, visitor isolation, reset, stale requests, request limits and bundle separation. Restart the demo after source edits because the registry caches definitions at startup.
+Run `npm run build` and `npm test` from the repository root after editing. Typechecking checks the example against the exported schema, and the HTTP checks exercise both discovery paths, prerequisite refusal, near misses, hints, nested content, forged state, locked delivery, concurrent retries, one-time rewards, visitor isolation, reset, stale commands, request limits and bundle separation. Restart the demo after source edits because the registry caches definitions at startup.
 
 When extending the demo, add checks for the behavior you introduce and keep later discoveries' names, answers and payloads out of earlier delivery. Changes to the real site's definitions and storage must use its private authoring and release workflow; this example is outside the live discovery corpus.
