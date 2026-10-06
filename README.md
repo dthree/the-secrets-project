@@ -1,6 +1,6 @@
 # The Secrets Project
 
-This is a mirror of the code repository for [The Secrets Project](https://thesecretsproject.com). If you came looking for the answers, nice try—the secrets have been redacted.
+This is a code mirror for [The Secrets Project](https://thesecretsproject.com). If you came looking for the answers, nice try—the secrets have been redacted.
 
 ## Engine overview
 
