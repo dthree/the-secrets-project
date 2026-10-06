@@ -3,7 +3,7 @@ import { isRevealed } from '../../shared/revealed.ts';
 import { CHANNEL_OF, type Window } from '../../shared/events.ts';
 import type { Channel } from '../../shared/events.ts';
 import type { Secret } from './registry.ts';
-import { typedText, type Durable, type Recurrence, type WarmthConfig } from '../../shared/secret.ts';
+import { typedText, withTypedTextMemo, type Durable, type Recurrence, type WarmthConfig } from '../../shared/secret.ts';
 import type { WarmthKind } from '../../shared/warmth.ts';
 import { typingFeedback } from './typing-feedback.ts';
 
@@ -35,7 +35,7 @@ const channelsInWindow = (w: Window): Set<Channel> => {
   return s;
 };
 
-export const evaluate = (
+const evaluatePass = (
   secrets: Secret[],
   window: Window,
   unlocked: ReadonlySet<number>,
@@ -142,6 +142,8 @@ export const evaluate = (
 
   return out;
 };
+
+export const evaluate: typeof evaluatePass = (...args) => withTypedTextMemo(() => evaluatePass(...args));
 
 export const evaluateReveals = (
   secrets: Secret[], window: Window, unlocked: ReadonlySet<number>, now: Date,

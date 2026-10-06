@@ -112,8 +112,21 @@ export type WarmthConfig = {
   where?: { path: string | readonly string[] };
 };
 
-export const typedText = (w: Window): string =>
-  w.events.filter(isKey).map((e) => e.k).join('').toLowerCase();
+let typedTextMemo: WeakMap<Window, string> | undefined;
+
+export function withTypedTextMemo<T>(work: () => T): T {
+  const previous = typedTextMemo;
+  typedTextMemo = new WeakMap();
+  try { return work(); }
+  finally { typedTextMemo = previous; }
+}
+export const typedText = (w: Window): string => {
+  const cached = typedTextMemo?.get(w);
+  if (cached !== undefined) return cached;
+  const text = w.events.filter(isKey).map((e) => e.k).join('').toLowerCase();
+  typedTextMemo?.set(w, text);
+  return text;
+};
 
 export const warmWord = (word: string, text: string): Verdict =>
   ({ r: 'warm', kind: 'proximity', text, keyLen: word.length });
