@@ -1,0 +1,28 @@
+{
+  "name": "secrets-engine-example",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && vite build --config vite.demo.config.ts && tsx scripts/build-islands.ts",
+    "start": "tsx demo/server.tsx",
+    "test": "tsx demo/check.ts"
+  },
+  "dependencies": {
+    "@hugeicons/core-free-icons": "4.3.2",
+    "express": "^4.19.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsx": "^4.16.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "three": "0.170.0",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.3"
+  }
+}
