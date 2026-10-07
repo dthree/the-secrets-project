@@ -366,6 +366,8 @@ export type SecretModule = {
 
   hasIsland?: boolean;
 
+  stylesEnabled?: boolean;
+
   chromeEdge?: 'fade' | 'rule';
 
   gameMode?: boolean | readonly string[];

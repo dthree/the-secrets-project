@@ -48,11 +48,11 @@ export const loadSecrets = async (): Promise<Secret[]> => {
 
     const manifest = { ...declaredManifest, teaser: publicSecretLabel(declaredManifest) };
     if (module.developmentOnly && process.env.NODE_ENV !== 'development') continue;
-    module.hasIsland = existsSync(join(base, 'island.tsx'));
+    module.hasIsland = module.hasIsland !== false && existsSync(join(base, 'island.tsx'));
 
     const cssPath = join(base, 'style.css');
 
-    const css = existsSync(cssPath) ? readCss(cssPath) : null;
+    const css = module.stylesEnabled !== false && existsSync(cssPath) ? readCss(cssPath) : null;
     const headPath = resolve('dist/islands', `${manifest.n}.head.js`);
     const beforePaint = existsSync(join(base, 'before-paint.ts')) && existsSync(headPath)
       ? readFileSync(headPath, 'utf8') : null;
