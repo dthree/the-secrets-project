@@ -111,7 +111,7 @@ export type Reveal = {
 import type { Medal } from './secret.ts';
 import type { WarmthKind } from './warmth.ts';
 
-export type SavedHint = { id: string; text: string; medal: Medal; at: number };
+export type SavedHint = { id: string; text: string; medal: Medal; at: number; explanation?: string | null };
 export type DiscoveryHistory = { discoveries: DiscoveryRow[]; hints: SavedHint[]; hasHints: boolean };
 
 export type DiscoveryRow = {
@@ -146,6 +146,8 @@ export type Notice = {
 };
 
 export type Early = {
+
+  explanation?: string;
 
   debug?: { fields: Array<{ label: string; value: string }> };
   medal: Medal;

@@ -10,7 +10,7 @@ import { typingFeedback } from './typing-feedback.ts';
 export type Outcome = {
   unlocked: Array<{ n: number; keyLen?: number }>;
 
-  early: Array<{ n: number; keyLen?: number; kind: WarmthKind; text?: string }>;
+  early: Array<{ n: number; keyLen?: number; kind: WarmthKind; text?: string; explanation?: string }>;
 };
 
 const placeMet = (w: WarmthConfig['where'], path: string | undefined): boolean => {
@@ -108,6 +108,7 @@ const evaluatePass = (
       const own = map ? map[hit] : undefined;
       out.early.push({
         n: manifest.n, keyLen: hit.length, kind: 'proximity', text: own || near.text,
+        explanation: near.explanations?.[hit] ?? `You typed “${hit}”.`,
       });
       continue;
     }
@@ -124,6 +125,7 @@ const evaluatePass = (
       if (!inPlace || !equipped || !inSeason || !freshVerdict()) { continue; }
       out.early.push({
         n: manifest.n, keyLen: verdict.keyLen, kind: verdict.kind, text: verdict.text,
+        ...(verdict.explanation ? { explanation: verdict.explanation } : {}),
       });
       continue;
     }
@@ -132,6 +134,7 @@ const evaluatePass = (
       if (!freshVerdict()) { continue; }
       out.early.push({
         n: manifest.n, keyLen: verdict.keyLen, kind: cfg?.gate ?? 'prerequisite',
+        explanation: cfg?.gateExplanation ?? 'An interaction you tried requires another discovery first.',
       });
       continue;
     }
@@ -140,6 +143,7 @@ const evaluatePass = (
       if (!freshVerdict()) { continue; }
       out.early.push({
         n: manifest.n, keyLen: verdict.keyLen, kind: 'time', text: cfg?.time?.text,
+        explanation: cfg?.time?.explanation ?? 'You tried an interaction on a day when it cannot be discovered.',
       });
       continue;
     }

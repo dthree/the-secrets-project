@@ -86,7 +86,7 @@ export type Verdict =
 
   | { r: 'unlock'; keyLen?: number }
 
-  | { r: 'warm'; kind: WarmthKind; text?: string; keyLen?: number };
+  | { r: 'warm'; kind: WarmthKind; text?: string; keyLen?: number; explanation?: string };
 
 export type Recurrence = {
 
@@ -101,13 +101,17 @@ export type WarmthConfig = {
 
   gate?: WarmthKind;
 
+  gateExplanation?: string;
+
   proximity?: {
 
     near: readonly string[] | Readonly<Record<string, string>>;
     text?: string;
+
+    explanations?: Readonly<Record<string, string>>;
   };
 
-  time?: { text?: string };
+  time?: { text?: string; explanation?: string };
 
   where?: { path: string | readonly string[] };
 };
@@ -129,7 +133,7 @@ export const typedText = (w: Window): string => {
 };
 
 export const warmWord = (word: string, text: string): Verdict =>
-  ({ r: 'warm', kind: 'proximity', text, keyLen: word.length });
+  ({ r: 'warm', kind: 'proximity', text, keyLen: word.length, explanation: `You typed “${word}”.` });
 
 export const MISS: Verdict = { r: 'miss' };
 export const UNLOCK: Verdict = { r: 'unlock' };
@@ -367,6 +371,8 @@ export type SecretModule = {
   hasIsland?: boolean;
 
   stylesEnabled?: boolean;
+
+  stylePaths?: readonly string[];
 
   chromeEdge?: 'fade' | 'rule';
 
