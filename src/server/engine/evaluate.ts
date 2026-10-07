@@ -29,10 +29,15 @@ const recurrenceMet = (r: Recurrence | undefined, now: Date | null, ignore = fal
   return true;
 };
 
-const channelsInWindow = (w: Window): Set<Channel> => {
+const channelsInWindow = (w: Window) => {
   const s = new Set<Channel>(['time']);
-  for (const e of w.events) { s.add(CHANNEL_OF[e.t]); }
-  return s;
+  let answered = Number.isSafeInteger(w.keyAnswered) && w.keyAnswered! > 0 ? w.keyAnswered! : 0;
+  let hasFreshTyping = !answered;
+  for (const e of w.events) {
+    s.add(CHANNEL_OF[e.t]);
+    if (!hasFreshTyping && e.t === 'k' && --answered < 0) hasFreshTyping = true;
+  }
+  return { channels: s, hasFreshTyping };
 };
 
 const evaluatePass = (
@@ -46,7 +51,7 @@ const evaluatePass = (
   opts: { ignoreRecurrence?: boolean; available?: ReadonlySet<number>; justUnlocked?: ReadonlySet<number> } = {},
 ): Outcome => {
   const access = opts.available ?? unlocked;
-  const live = channelsInWindow(window);
+  const { channels: live, hasFreshTyping } = channelsInWindow(window);
   const out: Outcome = { unlocked: [], early: [] };
   const freshTyping = typingFeedback(window);
   let localDate: Date | null | undefined;
@@ -54,7 +59,7 @@ const evaluatePass = (
   for (const { manifest, module } of secrets) {
     if (unlocked.has(manifest.n)) {
 
-      if (live.has('key') && manifest.channels.includes('key')) {
+      if (hasFreshTyping && live.has('key') && manifest.channels.includes('key')) {
         try {
           const v = module.detect({ window, unlocked: access, justUnlocked: opts.justUnlocked, now, durable, tagged });
           if (v.r === 'unlock' && v.keyLen && freshTyping(part => {
@@ -77,6 +82,8 @@ const evaluatePass = (
     }
 
     const cfg = module.warmth;
+
+    if (verdict.r === 'miss' && !cfg?.proximity) { continue; }
     const equipped = !(module.requires ?? []).some((r) => !access.has(r));
     const inSeason = !module.recurs || !!opts.ignoreRecurrence || recurrenceMet(module.recurs,
       localDate === undefined ? (localDate = calendarDate(now, window.timezoneOffset)) : localDate);
@@ -150,7 +157,7 @@ export const evaluateReveals = (
   durable: Durable, tagged: Readonly<Record<string, readonly number[]>>,
   opts: { ignoreRecurrence?: boolean } = {},
 ): Array<{ n: number; at: number }> => {
-  const channels = channelsInWindow(window);
+  const { channels } = channelsInWindow(window);
   let localDate: Date | null | undefined;
   const out: Array<{ n: number; at: number }> = [];
   for (const { manifest, module } of secrets) {

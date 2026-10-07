@@ -68,6 +68,8 @@ export type Window = {
 
 export type BatchRequest = {
 
+  page?: unknown;
+
   feedbackAck?: string[];
 
   noticeReceipt?: string;
