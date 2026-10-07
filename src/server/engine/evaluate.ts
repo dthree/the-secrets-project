@@ -147,6 +147,8 @@ const evaluatePass = (
     out.unlocked.push({ n: manifest.n, keyLen: verdict.keyLen });
   }
 
+  const typedAnswer = out.early.findIndex(e => (e.keyLen ?? 0) > 0);
+  if (typedAnswer > 0) out.early.unshift(...out.early.splice(typedAnswer, 1));
   return out;
 };
 
