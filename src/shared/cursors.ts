@@ -14,7 +14,9 @@ export type CursorSurface = {
 export type CursorSample = [x: number, y: number, timestamp: number, age: number, key?: string];
 export const CURSOR_SURFACE_BOUND = 1_000_000;
 
-export const CURSOR_IDLE_MS = 10_000;
+export const CURSOR_HEARTBEAT_MS = 8_000;
+
+export const CURSOR_LEASE_MS = 24_000;
 
 export const CURSORS_FROM = 3;
 
