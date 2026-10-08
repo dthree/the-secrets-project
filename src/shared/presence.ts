@@ -1,4 +1,4 @@
-export type PresenceView = { total: number; page: number };
+export type PresenceView = { total: number; page: number; at: number };
 
 export const PAGE_BREAKDOWN_ABOVE = 10;
 
