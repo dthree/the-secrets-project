@@ -16,9 +16,12 @@ export const CURSOR_SURFACE_BOUND = 1_000_000;
 
 export const CURSOR_HEARTBEAT_MS = 8_000;
 
-export const CURSOR_LEASE_MS = 24_000;
+export const CURSOR_PLAYBACK_MS = CURSOR_HEARTBEAT_MS + 1_000;
 
-export const CURSORS_FROM = 3;
+export const CURSOR_HISTORY_MS = CURSOR_PLAYBACK_MS + 3_000;
+export const CURSOR_HISTORY_POINTS = 60;
+
+export const CURSOR_LEASE_MS = 24_000;
 
 export const CURSORS_SHOWN = 15;
 
