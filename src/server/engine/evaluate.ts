@@ -8,7 +8,7 @@ import type { WarmthKind } from '../../shared/warmth.ts';
 import { typingFeedback } from './typing-feedback.ts';
 
 export type Outcome = {
-  unlocked: Array<{ n: number; keyLen?: number }>;
+  unlocked: Array<{ n: number; keyLen?: number; cause?: number }>;
 
   early: Array<{ n: number; keyLen?: number; kind: WarmthKind; text?: string; explanation?: string }>;
 };
@@ -148,7 +148,8 @@ const evaluatePass = (
       continue;
     }
 
-    out.unlocked.push({ n: manifest.n, keyLen: verdict.keyLen });
+    out.unlocked.push({ n: manifest.n, keyLen: verdict.keyLen,
+      ...(Number.isSafeInteger(verdict.cause) && module.unlockExplanations?.[verdict.cause!] ? { cause: verdict.cause } : {}) });
   }
 
   const typedAnswer = out.early.findIndex(e => (e.keyLen ?? 0) > 0);

@@ -72,15 +72,14 @@ for (const [n, entry] of entries) {
       },
     },
   });
-  for (const [source, suffix] of [['before-paint.ts', 'head'], ['profile-client.ts', 'profile'], ['stage-client.ts', 'stage']]) {
+  for (const [source, suffix] of [['before-paint.ts', 'head'], ['profile-client.ts', 'profile']]) {
     const extra = join(dirname(entry), source);
     if (existsSync(extra)) {
       await build({
         configFile: false, publicDir: false, logLevel: 'warn', plugins: [iconBoundary(), bare(), disclosureBoundary()],
         build: { outDir: OUT, emptyOutDir: false, minify: false,
           rollupOptions: { input: extra,
-            preserveEntrySignatures: 'exports-only',
-            output: { format: suffix === 'stage' ? 'es' : 'iife', entryFileNames: `${n}.${suffix}.js`, inlineDynamicImports: true } } },
+            output: { format: 'iife', entryFileNames: `${n}.${suffix}.js`, inlineDynamicImports: true } } },
       });
     } else {
       rmSync(join(OUT, `${n}.${suffix}.js`), { force: true });
@@ -89,9 +88,9 @@ for (const [n, entry] of entries) {
 }
 
 const files = readdirSync(OUT);
-const stray = files.filter((f) => !/^\d+(?:\.(?:head|profile|stage))?\.js$/.test(f));
+const stray = files.filter((f) => !/^\d+(?:\.(?:head|profile))?\.js$/.test(f));
 if (stray.length > 0) {
-  throw new Error(`${OUT} must contain only <number>.js, <number>.head.js <number>.profile.js or <number>.stage.js — found ${stray.join(', ')}`);
+  throw new Error(`${OUT} must contain only <number>.js, <number>.head.js or <number>.profile.js — found ${stray.join(', ')}`);
 }
 
 const importing = files.filter((f) => /(^|\n)\s*import[\s{'"*]/.test(readFileSync(join(OUT, f), 'utf8')));

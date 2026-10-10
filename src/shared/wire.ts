@@ -40,7 +40,7 @@ export type Wire = {
 
   w?: number[];
 
-  c?: Array<[number, number, number, number, number]>;
+  c?: Array<[number, number, number, number, number, ('mouse' | 'touch' | 'pen')?]>;
   d?: string[];
 
   u?: number[];
@@ -128,7 +128,7 @@ export const encode = (events: Ev[], state: Omit<Window, 'events' | 'ua'>): Wire
       const key = JSON.stringify(e.d);
       let i = d.indexOf(key);
       if (i < 0) { i = d.push(key) - 1; }
-      return [e.ts, e.x, e.y, e.b, i] as [number, number, number, number, number];
+      return [e.ts, e.x, e.y, e.b, i, ...(e.pointer ? [e.pointer] : [])] as NonNullable<Wire['c']>[number];
     });
     out.d = d;
   }
@@ -189,10 +189,10 @@ export const decode = (w: Wire, ua: string): Window => {
   }
 
   if (w.c?.length) {
-    for (const [ts, x, y, b, di] of w.c) {
+    for (const [ts, x, y, b, di, pointer] of w.c) {
       let d: Descriptor = { tag: 'none', id: null, cls: [], data: {} };
       try { d = JSON.parse(w.d?.[di] ?? '') as Descriptor; } catch {                          }
-      events.push({ t: 'c', ts, x, y, b, d });
+      events.push({ t: 'c', ts, x, y, b, d, ...(pointer === 'mouse' || pointer === 'touch' || pointer === 'pen' ? { pointer } : {}) });
     }
   }
 

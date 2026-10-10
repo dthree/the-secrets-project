@@ -10,7 +10,7 @@ export type Ev =
   | { t: 'p'; ts: number; x: number; y: number; h?: 1; s?: number }
   | { t: 'k'; ts: number; k: string }
 
-  | { t: 'c'; ts: number; x: number; y: number; d: Descriptor; b: number }
+  | { t: 'c'; ts: number; x: number; y: number; d: Descriptor; b: number; pointer?: 'mouse' | 'touch' | 'pen' }
 
   | { t: 'u'; ts: number; ms: number }
 
@@ -68,6 +68,8 @@ export type Window = {
 
 export type BatchRequest = {
 
+  introReady?: boolean;
+
   page?: unknown;
 
   feedbackAck?: string[];
@@ -119,6 +121,8 @@ export type DiscoveryRow = {
 };
 
 export type Notice = {
+
+  guide?: string;
   presentation?: 'standard' | 'significant';
 
   at?: number;
@@ -208,8 +212,8 @@ export type BatchResponse = {
 
   swaps?: Array<{ sel: string; html: string; scroll?: 'start' }>;
 
-  counterHtml: string;
-  mineHtml: string;
+  counterHtml?: string;
+  mineHtml?: string;
   dismissArrival?: boolean;
 
   mine: number;

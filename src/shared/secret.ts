@@ -38,6 +38,8 @@ export type PublicManifest = {
 
 export type Durable = {
 
+  acked?: readonly number[];
+
   resetAt?: number | null;
 
   visits: number;
@@ -84,7 +86,7 @@ export type DetectCtx = {
 export type Verdict =
   | { r: 'miss' }
 
-  | { r: 'unlock'; keyLen?: number }
+  | { r: 'unlock'; keyLen?: number; cause?: number }
 
   | { r: 'warm'; kind: WarmthKind; text?: string; keyLen?: number; explanation?: string };
 
@@ -156,6 +158,8 @@ export const unlockPhrase = (w: Window, phrase: string): Verdict => {
 };
 
 export type SlotCtx = {
+
+  justAcknowledged?: ReadonlySet<number>;
 
   justUnlocked?: ReadonlySet<number>;
 
@@ -338,6 +342,8 @@ export type SecretModule = {
   description: string;
 
   unlockExplanation: string;
+
+  unlockExplanations?: Readonly<Record<number, string>>;
 
   unlockExplanationTouch?: string;
 
