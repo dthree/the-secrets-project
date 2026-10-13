@@ -12,7 +12,7 @@ export type Ev =
 
   | { t: 'c'; ts: number; x: number; y: number; d: Descriptor; b: number; pointer?: 'mouse' | 'touch' | 'pen' }
 
-  | { t: 'u'; ts: number; ms: number }
+  | { t: 'u'; ts: number; ms: number; drift?: number }
 
   | { t: 'v'; ts: number; w: number; h: number }
 
@@ -122,6 +122,8 @@ export type DiscoveryRow = {
 
 export type Notice = {
 
+  hintKey?: string;
+
   guide?: string;
   presentation?: 'standard' | 'significant';
 
@@ -150,6 +152,10 @@ export type Notice = {
 };
 
 export type Early = {
+
+  hintKey?: string;
+
+  guide?: string;
 
   explanation?: string;
 
@@ -202,7 +208,11 @@ export type BatchResponse = {
 
   go?: string;
 
+  goImmediate?: boolean;
+
   goLabel?: string;
+
+  goIntroduction?: string;
 
   shapesHtml?: string;
 

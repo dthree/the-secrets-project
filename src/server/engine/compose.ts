@@ -13,6 +13,7 @@ export const CORE_SLOTS = [
   'chrome.beforeDiscoveries',
   'chrome.account',
   'chrome.status',
+  'chrome.idle',
   'chrome.bottom',
 
   'credits.rows',

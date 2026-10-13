@@ -166,6 +166,8 @@ export type SlotCtx = {
   prepared?: ReadonlyMap<number, unknown>;
   publicVisitor?: boolean;
 
+  publicVisits?: readonly number[];
+
   arrival?: { name?: string; text: string };
 
   presence?: import('./presence.ts').PresenceView;
@@ -242,6 +244,8 @@ export type Credit = {
 } & ({
 
   category: 'niches';
+
+  earnedTally?: string;
   licence?: never;
   licenceUrl?: never;
   required: false;
@@ -393,6 +397,8 @@ export type SecretModule = {
   grants?: { money?: number; item?: string };
 
   navigateTo?: string;
+
+  navigateImmediately?: boolean;
 
   arrivalUnlocks?: boolean;
 

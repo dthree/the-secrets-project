@@ -9,12 +9,15 @@ export const privateClientModule = (id: string): boolean => {
   const root = parts.lastIndexOf('src');
   if (root < 0) return false;
   return parts[root + 1] === 'server'
-    || /\.server\.[cm]?[jt]sx?$/.test(parts.at(-1) ?? '')
+    || /\.server\.(?:[cm]?[jt]sx?|json)$/.test(parts.at(-1) ?? '')
     || (parts[root + 1] === 'secrets' && parts.length === root + 4 && /^(?:secret|manifest)\.tsx?$/.test(parts[root + 3]));
 };
 
-export const disclosureBoundary = (): Plugin => ({
+export const disclosureBoundary = (): Plugin => {
+
+  return ({
   name: 'disclosure-boundary',
+
   generateBundle(_options, bundle) {
     for (const out of Object.values(bundle)) {
       if (out.type !== 'chunk') continue;
@@ -36,6 +39,7 @@ export const disclosureBoundary = (): Plugin => ({
       mkdirSync('dist/disclosure', { recursive: true });
       for (const out of Object.values(bundle)) {
         if (out.type !== 'chunk') continue;
+
         const file = relative(process.cwd(), resolve(dir, out.fileName));
         const modules = Object.entries(out.modules).filter(([, info]) => info.renderedLength > 0)
           .filter(([id]) => !id.startsWith('\0') && !id.includes('/node_modules/'))
@@ -52,3 +56,4 @@ export const disclosureBoundary = (): Plugin => ({
     },
   },
 });
+};

@@ -2,6 +2,7 @@ import ts from 'typescript';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import type { Plugin } from 'vite';
+
 import { stripEmbeddedComments } from '../src/shared/comments.ts';
 
 export type Span = { pos: number; end: number };
@@ -53,7 +54,7 @@ const stringSpans = (sf: ts.SourceFile): Span[] => {
   return out;
 };
 
-export const stripJs = (code: string): string => {
+const stripEdits = (code: string): Array<Span & { text: string }> => {
   const sf = parse(code);
   const edits: Array<Span & { text: string }> = jsComments(code, sf).map((c) => ({ ...c, text: '' }));
   for (const s of stringSpans(sf)) {
@@ -62,9 +63,11 @@ export const stripJs = (code: string): string => {
     if (bare !== raw) { edits.push({ ...s, text: bare }); }
   }
   edits.sort((a, b) => a.pos - b.pos);
-  let out = '';
-  let at = 0;
-  for (const e of edits) {
+  return edits;
+};
+export const stripJs = (code: string): string => {
+  let out = '', at = 0;
+  for (const e of stripEdits(code)) {
     out += code.slice(at, e.pos) + e.text;
     at = e.end;
   }
@@ -79,7 +82,10 @@ export const bare = (): Plugin => ({
     for (const out of Object.values(bundle)) {
       if (out.type !== 'chunk') { continue; }
       const path = join(dir, out.fileName);
-      writeFileSync(path, stripJs(readFileSync(path, 'utf8')));
+      const code = readFileSync(path, 'utf8');
+
+      out.code = stripJs(code);
+      writeFileSync(path, out.code);
     }
   },
 });

@@ -45,6 +45,8 @@ export type Wire = {
 
   u?: number[];
 
+  ud?: number[];
+
   e?: Ev[];
 };
 
@@ -138,6 +140,7 @@ export const encode = (events: Ev[], state: Omit<Window, 'events' | 'ua'>): Wire
     for (let i = 1; i < presses.length; i++) {
       out.u.push(presses[i].ts - presses[i - 1].ts, presses[i].ms);
     }
+    if (presses.some((e) => e.drift !== undefined)) { out.ud = presses.map((e) => e.drift ?? 0); }
   }
 
   const latest = unheld.at(-1);
@@ -202,7 +205,7 @@ export const decode = (w: Wire, ua: string): Window => {
     let ts = 0;
     for (let i = 0; i < w.u.length; i += 2) {
       ts += w.u[i];
-      events.push({ t: 'u', ts, ms: w.u[i + 1] });
+      events.push({ t: 'u', ts, ms: w.u[i + 1], ...(w.ud ? { drift: w.ud[i / 2] } : {}) });
     }
   }
 
