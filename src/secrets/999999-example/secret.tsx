@@ -6,7 +6,7 @@ export const secret: SecretModule = {
   name: 'An Example Machine',
   description: 'Nobody left a manual, but the handle looks promising.',
   unlockExplanation: 'You typed “example”.',
-  unlockedBy: 'The server finds example in the lower-cased key input window, with no prerequisite or calendar restriction.',
+  adminUnlockExplanation: 'Type “example”.',
   discoveryPages: ['*'],
   tags: ['example'],
   warmth: { proximity: { near: ['demo', 'sample'], text: 'That is close to another word for demonstration.' } },

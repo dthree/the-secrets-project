@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import type { Plugin } from 'vite';
 
@@ -82,7 +82,7 @@ export const bare = (): Plugin => ({
     for (const out of Object.values(bundle)) {
       if (out.type !== 'chunk') { continue; }
       const path = join(dir, out.fileName);
-      const code = readFileSync(path, 'utf8');
+      const code = out.code;
 
       out.code = stripJs(code);
       writeFileSync(path, out.code);

@@ -8,10 +8,6 @@ export const CORE_SLOTS = [
   'home.center',
   'chrome.topLeft',
   'chrome.topCenter',
-  'chrome.topRight',
-  'chrome.tools',
-  'chrome.beforeDiscoveries',
-  'chrome.account',
   'chrome.status',
   'chrome.idle',
   'chrome.bottom',
@@ -88,16 +84,27 @@ export const compose = (
     }
   }
 
+  let inventory: Map<string, Array<{ secret: Secret; contribution: RenderContribution }>> | undefined;
+  const inventoryFor = (name: string) => {
+    if (!inventory) {
+      inventory = new Map();
+      for (const secret of secrets) for (const contribution of secret.module.contributions ?? []) {
+        if (contribution.kind !== 'render' || !declared.has(contribution.slot)) continue;
+        const bucket = inventory.get(contribution.slot);
+        const entry = { secret, contribution };
+        if (bucket) bucket.push(entry);
+        else inventory.set(contribution.slot, [entry]);
+      }
+    }
+    return inventory.get(name) ?? [];
+  };
   const entries: NonNullable<SlotRenderer['entries']> = (name) => {
     const out: Array<ReturnType<NonNullable<SlotRenderer['entries']>>[number]> = [];
     if (!declared.has(name)) return out;
 
-    for (const s of secrets) {
-      for (const c of s.module.contributions ?? []) {
-        if (c.kind !== 'render' || c.slot !== name) continue;
-        const held = unlocked.has(s.manifest.n);
-        out.push({ n: s.manifest.n, priority: c.priority, held, ...(held ? { css: s.css } : {}) });
-      }
+    for (const { secret: s, contribution: c } of inventoryFor(name)) {
+      const held = unlocked.has(s.manifest.n);
+      out.push({ n: s.manifest.n, priority: c.priority, held, ...(held ? { css: s.css } : {}) });
     }
     return out.sort((a, b) => a.priority - b.priority || a.n - b.n);
   };

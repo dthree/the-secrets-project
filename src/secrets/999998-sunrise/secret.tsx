@@ -4,7 +4,7 @@ export const secret: SecretModule = {
   name: 'Pocket Sunrise',
   description: 'Apparently, this is where the morning comes from.',
   unlockExplanation: 'You turned the example machine’s handle three times.',
-  unlockedBy: 'An admitted example.turn report brings the server-owned example.turns tally to at least three while the machine discovery is held.',
+  adminUnlockExplanation: 'After discovering the example machine, turn its handle three times.',
   discoveryPages: ['/'],
   requires: [999999],
   tags: ['example'],

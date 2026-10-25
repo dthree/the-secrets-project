@@ -6,12 +6,25 @@ export type CursorSurface = {
   path: string;
   host: HTMLElement;
   shape?: 'cell';
+
+  eventDriven?: boolean;
+
+  prepareFrame?(): void;
   selection?(): CursorPoint | null;
+  preview?(): CursorPreview;
+  receivePreviews?(peers: CursorPreviewPeer[]): void;
   toShared(x: number, y: number): CursorPoint | null;
   fromShared(x: number, y: number, key?: string): { x: number; y: number; width?: number; height?: number } | null;
 };
 
-export type CursorSample = [x: number, y: number, timestamp: number, age: number, key?: string];
+export type CursorPreview = Array<[x:number,y:number,glyph:string]>;
+export type CursorPreviewPeer = {
+  id: string;
+  label: string;
+  cells: CursorPreview;
+
+};
+export type CursorSample = [x: number, y: number, timestamp: number, age: number, key?: string | null, preview?: CursorPreview];
 export const CURSOR_SURFACE_BOUND = 1_000_000;
 
 export const CURSOR_HEARTBEAT_MS = 8_000;

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { isKey, type Channel, type Window } from './events.ts';
+import { isKey,type Channel,type Window } from './events.ts';
 import type { WarmthKind } from './warmth.ts';
 
 export type Hint = {
@@ -28,6 +28,8 @@ export type PublicManifest = {
   channels: Channel[];
 
   medal: Medal;
+
+  replayable?: boolean;
 
   hintsUnlocked?: Hint[];
 
@@ -73,6 +75,8 @@ export type Durable = {
 };
 
 export type DetectCtx = {
+
+  progress?: unknown;
   window: Window;
   unlocked: ReadonlySet<number>;
 
@@ -86,7 +90,7 @@ export type DetectCtx = {
 export type Verdict =
   | { r: 'miss' }
 
-  | { r: 'unlock'; keyLen?: number; cause?: number }
+  | { r: 'unlock'; keyLen?: number; cause?: number; matchedText?: string }
 
   | { r: 'warm'; kind: WarmthKind; text?: string; keyLen?: number; explanation?: string };
 
@@ -103,9 +107,13 @@ export type WarmthConfig = {
 
   gate?: WarmthKind;
 
+  gateText?: string;
+
   gateExplanation?: string;
 
   proximity?: {
+
+    requires?: readonly number[];
 
     near: readonly string[] | Readonly<Record<string, string>>;
     text?: string;
@@ -140,7 +148,7 @@ export const warmWord = (word: string, text: string): Verdict =>
 export const MISS: Verdict = { r: 'miss' };
 export const UNLOCK: Verdict = { r: 'unlock' };
 
-export const unlockWord = (word: string): Verdict => ({ r: 'unlock', keyLen: word.length });
+export const unlockWord = (word: string): Verdict => ({ r: 'unlock', keyLen: word.length, matchedText: word });
 
 export const unlockPhrase = (w: Window, phrase: string): Verdict => {
   const want = phrase.replace(/[^a-z0-9]/g, '');
@@ -154,7 +162,8 @@ export const unlockPhrase = (w: Window, phrase: string): Verdict => {
   }
   const found = compact.indexOf(want);
   if (found < 0) { return MISS; }
-  return { r: 'unlock', keyLen: at[found + want.length - 1] - at[found] + 1 };
+  const start = at[found], end = at[found + want.length - 1] + 1;
+  return { r: 'unlock', keyLen: end - start, matchedText: raw.slice(start, end) };
 };
 
 export type SlotCtx = {
@@ -164,7 +173,10 @@ export type SlotCtx = {
   justUnlocked?: ReadonlySet<number>;
 
   prepared?: ReadonlyMap<number, unknown>;
+
   publicVisitor?: boolean;
+
+  fieldGuideDone?: boolean;
 
   publicVisits?: readonly number[];
 
@@ -215,6 +227,7 @@ export type RenderContribution = {
   slot: string;
   priority: number;
   node: (c: SlotCtx, slot: SlotRenderer) => ReactNode;
+
 };
 
 export type SlotMap = Map<string, Array<{ priority: number; n: number; c: RenderContribution }>>;
@@ -240,10 +253,12 @@ export type Credit = {
   title: string;
   author: string;
 
+  playerAuthors?: readonly { label: string; href?: string }[];
+
   url?: string;
 } & ({
 
-  category: 'niches';
+  category: 'niches' | 'players';
 
   earnedTally?: string;
   licence?: never;
@@ -286,7 +301,7 @@ export type ProfileAppearance = {
     background?: string;
     ink?: string;
     scale?: number;
-    wallpaper?: { image: string; size: string; intensity: number; accent?: string; accentColor?: string };
+    wallpaper?: { image: string; size: string; intensity: number; painted?: true; accent?: string; accentColor?: string };
   };
 };
 
@@ -309,6 +324,12 @@ export type ShareArtifact = {
 
 export type SecretModule = {
 
+  farmObject?: { item: string }
+    | { image: string; crop?: { left: number; top: number; width: number; height: number } }
+    | { sprite: { manifest: string; frames: readonly string[] } }
+    | { parts: { manifest: string; names: readonly string[] } }
+    | { layers: readonly string[]; manifest: string; crop?: { left: number; top: number; width: number; height: number } };
+
   interactionFeedback?: readonly {
     id: string;
     fixture: number;
@@ -325,7 +346,7 @@ export type SecretModule = {
   pages?: readonly { path: string; title: string; game?: boolean;
 
     icon?: typeof import('@hugeicons/core-free-icons').Home01Icon;
-    search?: { title: string; description: string };
+
     canonicalPath?: string;
 
     navigation?: false;
@@ -339,6 +360,8 @@ export type SecretModule = {
 
   reveal?: {
     detect(ctx: DetectCtx): number | null;
+
+    island?: boolean;
     contributions: RenderContribution[];
   };
 
@@ -351,13 +374,17 @@ export type SecretModule = {
 
   unlockExplanationTouch?: string;
 
+  rewardAction?: { label: string; href: string };
+
+  quietWith?: number;
+
   unlocks?: Array<{
     title: string;
     description: string;
     icon: typeof import('@hugeicons/core-free-icons').Home01Icon;
   }>;
 
-  unlockedBy?: string;
+  adminUnlockExplanation?: string;
 
   discoveryPages?: readonly string[];
 
@@ -375,6 +402,8 @@ export type SecretModule = {
   contributions?: Contribution[];
 
   tags?: string[];
+
+  fieldOnly?: false;
 
   label?: string;
 

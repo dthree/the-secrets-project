@@ -76,11 +76,14 @@ export const validate = (secrets: Secret[]) => {
 
   for (const s of secrets) {
     publicSecretLabel(s.manifest);
+    if (s.manifest.replayable && (!s.manifest.channels.includes('key') || !s.module.hasIsland)) {
+      throw new Error(`secret ${s.manifest.n} needs a key detector and an island to replay its effect`);
+    }
     if (!s.module.unlockExplanation?.trim()) {
       throw new Error(`secret ${s.manifest.n} needs a visitor-facing unlock explanation`);
     }
     for (const feature of s.module.unlocks ?? []) {
-      if (!feature.title.trim() || !feature.description.trim() || !feature.icon.length) {
+      if (!feature.title.trim() || typeof feature.description !== 'string' || !feature.icon.length) {
         throw new Error(`secret ${s.manifest.n} has an incomplete discovery feature`);
       }
     }

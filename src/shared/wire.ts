@@ -6,16 +6,20 @@ export const PARAMS_MAX = 8;
 export const PARAM_LEN = 32;
 
 export type Wire = {
+
   feedbackAck?: string[];
   noticeReceipt?: string;
 
   tz?: number;
   pr?: 1;
+  pa?: number;
   v: typeof WIRE_V;
 
   vw: number;
   vh: number;
   i: number;
+
+  sd?: number;
   p: string;
 
   q?: string[];
@@ -90,6 +94,7 @@ export const encode = (events: Ev[], state: Omit<Window, 'events' | 'ua'>): Wire
     sb: Math.round(state.below),
     b: state.broke || undefined,
   };
+  if (state.drawingMs !== undefined) out.sd = state.drawingMs;
 
   if (keys.length) {
     out.ka = state.keyAnswered || undefined;
@@ -217,12 +222,14 @@ export const decode = (w: Wire, ua: string): Window => {
   return {
     events,
     keyAnswered: Number.isInteger(w.ka) && w.ka! >= 0 && w.ka! <= (w.k?.length ?? 0) ? w.ka : undefined,
+
     ua,
 
     timezoneOffset: w.tz,
     vw: num(w.vw, 0),
     vh: num(w.vh, 0),
     idle: num(w.i, 0),
+    ...(w.sd === undefined ? {} : { drawingMs: w.sd }),
     path: str(w.p, '/'),
 
     params: Array.isArray(w.q)

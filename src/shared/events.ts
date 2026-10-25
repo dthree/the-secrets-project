@@ -18,10 +18,12 @@ export type Ev =
 
   | { t: 'w'; ts: number; dy: number }
 
-  | { t: 'x'; ts: number; k: string };
+  | { t: 'x'; ts: number; k: string }
+
+  | { t: 'b'; ts: number; k: 'beforeprint' | 'afterprint' };
 
 export type Channel =
-  | 'pointer' | 'key' | 'click' | 'viewport' | 'wheel' | 'time' | 'report';
+  | 'pointer' | 'key' | 'click' | 'viewport' | 'wheel' | 'time' | 'report' | 'browser';
 
 export const CHANNEL_OF: Record<Ev['t'], Channel> = {
   p: 'pointer',
@@ -31,6 +33,7 @@ export const CHANNEL_OF: Record<Ev['t'], Channel> = {
   v: 'viewport',
   w: 'wheel',
   x: 'report',
+  b: 'browser',
 };
 
 export const isClick = (e: Ev): e is Extract<Ev, { t: 'c' }> => e.t === 'c';
@@ -39,6 +42,8 @@ export const isPointer = (e: Ev): e is Extract<Ev, { t: 'p' }> => e.t === 'p';
 export const isReport = (e: Ev): e is Extract<Ev, { t: 'x' }> => e.t === 'x';
 
 export type Window = {
+
+  residents?: Array<[number, string]>;
 
   timezoneOffset?: number;
   events: Ev[];
@@ -51,6 +56,8 @@ export type Window = {
   vh: number;
 
   idle: number;
+
+  drawingMs?: number;
 
   path: string;
 
@@ -68,9 +75,13 @@ export type Window = {
 
 export type BatchRequest = {
 
+  shareToken?: boolean;
+
   introReady?: boolean;
 
   page?: unknown;
+
+  signal?: unknown;
 
   feedbackAck?: string[];
 
@@ -80,7 +91,10 @@ export type BatchRequest = {
 
   pr?: 1;
 
+  pa?: number;
+
   cu?: number;
+  ch?: 1;
 
   cs?: import('./cursors.ts').CursorSample | null;
 
@@ -114,7 +128,7 @@ import type { Medal } from './secret.ts';
 import type { WarmthKind } from './warmth.ts';
 
 export type SavedHint = { id: string; text: string; medal: Medal; at: number; explanation?: string | null };
-export type DiscoveryHistory = { discoveries: DiscoveryRow[]; hints: SavedHint[]; hasHints: boolean };
+export type DiscoveryHistory = { discoveries: DiscoveryRow[]; hints: SavedHint[]; hasHints: boolean; news?: string };
 
 export type DiscoveryRow = {
   n: number; name: string; description: string; medal: Medal; unread: boolean; at: number;
@@ -125,7 +139,9 @@ export type Notice = {
   hintKey?: string;
 
   guide?: string;
-  presentation?: 'standard' | 'significant';
+  presentation?: 'standard' | 'significant' | 'quiet';
+
+  rewardAction?: { label: string; href: string };
 
   at?: number;
   n: number;
@@ -153,9 +169,9 @@ export type Notice = {
 
 export type Early = {
 
-  hintKey?: string;
+  responseId?: string;
 
-  guide?: string;
+  hintKey?: string;
 
   explanation?: string;
 
@@ -171,8 +187,13 @@ export type Early = {
 };
 
 export type BatchResponse = {
+
+  signal?: unknown;
+
+  page?: unknown;
+  shareToken?: string;
   display?: string;
-  feedback?: { id: string; title?: string; text: string };
+  feedback?: { id: string; title?: string; text: string; icon?: 'pips' };
   feedbackAck?: string[];
 
   probe?: import('./probe.ts').ProbeReply;
@@ -191,6 +212,8 @@ export type BatchResponse = {
   reveals: Reveal[];
 
   notices: Notice[];
+
+  replays?: Array<{ n: number; keyLen: number }>;
 
   earned?: number[];
 
@@ -220,7 +243,7 @@ export type BatchResponse = {
 
   paid?: number;
 
-  swaps?: Array<{ sel: string; html: string; scroll?: 'start' }>;
+  swaps?: Array<{ sel: string; html: string; scroll?: 'start'; keyLen?: number }>;
 
   counterHtml?: string;
   mineHtml?: string;

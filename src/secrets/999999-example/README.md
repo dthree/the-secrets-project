@@ -50,7 +50,7 @@ The production system also supports optional server route handlers and appearanc
 
 `secret.tsx` exports a `SecretModule`. Its required fields are `name`, `description`, `unlockExplanation` and `detect`. The canonical name uses Title Case; the description and earned explanation use ordinary prose. `unlockExplanation` tells the visitor what they did and must be nonempty. An optional `unlockExplanationTouch` supplies an accurate alternative for touch devices.
 
-This example also supplies `unlockedBy`, a private technical description of the trigger; `discoveryPages: ['*']`, meaning page-independent discovery; and `tags: ['example']`, which lets `tagIndex` group it for collection detectors. `discoveryPages` documents where discovery can happen, while the detector and server admission decide where input is accepted. The demo accepts input on its homepage.
+This example also supplies `adminUnlockExplanation`, concise private admin instructions for the unlock action; `discoveryPages: ['*']`, meaning page-independent discovery; and `tags: ['example']`, which lets `tagIndex` group it for collection detectors. `discoveryPages` documents where discovery can happen, while the detector and server admission decide where input is accepted. The demo accepts input on its homepage.
 
 The detector reads `DetectCtx.window` and returns `MISS` or `unlockWord(WORD)`. `typedText` lowercases the key events, and `unlockWord` includes the matched length for typing feedback. Other detectors can return `UNLOCK` or a warmth verdict. Keep detectors synchronous and pure, with no database writes, network requests or reward side effects.
 
@@ -63,7 +63,7 @@ The exported `SecretModule` type contains the full field shapes. These optional 
 | Eligibility | `requires` lists existing prerequisite numbers; the registry rejects missing references and cycles. `recurs` declares repeating weekday, monthly-date or annual-date conditions for the evaluator. |
 | Near misses | `warmth` configures prerequisite, proximity and calendar feedback, including optional page scope. Its candidate words remain server-owned. |
 | Composition | `contributions` supplies render entries or structural transforms; `declaresSlots` declares hosts. Render entries receive `SlotCtx` and a slot renderer. `label` is an optional earned display label. |
-| Discovery details | `unlocks` describes immediate earned benefits with a title, description and icon. `unlockedBy`, `discoveryPages` and `progression` are private authoring metadata, never public clues or eligibility gates. |
+| Discovery details | `unlocks` describes immediate earned benefits with a title, description and icon. `adminUnlockExplanation`, `discoveryPages` and `progression` are private authoring metadata, never public clues or eligibility gates. |
 | Revealed affordances | `reveal` can supply small render contributions before discovery; its detector returns an event timestamp for reset fencing. It grants no discovery, island access or reward. |
 | Pages and navigation | `pages`, `navigateTo`, `arrivalUnlocks`, `pasteable`, `chromeEdge` and `gameMode` describe destinations and their presentation. Page metadata alone grants no access. |
 | Public visitors | `publicVisitorMode`, `publicVisitorPaths` and `publicVisitorRoutes` declare admission and narrow read/play capabilities. Every game requires complete `play` admission; `publicExcept` is limited to non-game prize pages. Production admission and invitation handling are outside this demo. |

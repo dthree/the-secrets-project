@@ -8,6 +8,7 @@ import type { WarmthKind } from '../../shared/warmth.ts';
 import { typingFeedback } from './typing-feedback.ts';
 
 export type Outcome = {
+  replays?: Array<{ n: number; keyLen: number }>;
   unlocked: Array<{ n: number; keyLen?: number; cause?: number }>;
 
   early: Array<{ n: number; keyLen?: number; kind: WarmthKind; text?: string; explanation?: string }>;
@@ -48,7 +49,7 @@ const evaluatePass = (
   durable: Durable,
   tagged: Readonly<Record<string, readonly number[]>>,
 
-  opts: { ignoreRecurrence?: boolean; available?: ReadonlySet<number>; justUnlocked?: ReadonlySet<number> } = {},
+  opts: { progress?: unknown; ignoreRecurrence?: boolean; available?: ReadonlySet<number>; justUnlocked?: ReadonlySet<number> } = {},
 ): Outcome => {
   const access = opts.available ?? unlocked;
   const { channels: live, hasFreshTyping } = channelsInWindow(window);
@@ -61,12 +62,20 @@ const evaluatePass = (
 
       if (hasFreshTyping && live.has('key') && manifest.channels.includes('key')) {
         try {
-          const v = module.detect({ window, unlocked: access, justUnlocked: opts.justUnlocked, now, durable, tagged });
+          const v = module.detect({ window, unlocked: access, justUnlocked: opts.justUnlocked, now, durable, tagged, progress: opts.progress });
           if (v.r === 'unlock' && v.keyLen && freshTyping(part => {
-            const match = module.detect({ window: part, unlocked: access, justUnlocked: opts.justUnlocked, now, durable, tagged });
+            const match = module.detect({ window: part, unlocked: access, justUnlocked: opts.justUnlocked, now, durable, tagged, progress: opts.progress });
             return match.r === 'unlock' && match.keyLen === v.keyLen;
           })) {
-            out.early.push({ n: manifest.n, keyLen: v.keyLen, kind: 'held' });
+            if (manifest.replayable) {
+              if (!opts.justUnlocked?.has(manifest.n)
+                && !(module.requires ?? []).some(n => !access.has(n))
+                && recurrenceMet(module.recurs, module.recurs ? calendarDate(now, window.timezoneOffset) : null, opts.ignoreRecurrence)) {
+                (out.replays ??= []).push({ n: manifest.n, keyLen: v.keyLen });
+              }
+            } else {
+              out.early.push({ n: manifest.n, keyLen: v.keyLen, kind: 'held' });
+            }
           }
         } catch {                                                   }
       }
@@ -76,7 +85,7 @@ const evaluatePass = (
 
     let verdict;
     try {
-      verdict = module.detect({ window, unlocked: access, justUnlocked: opts.justUnlocked, now, durable, tagged });
+      verdict = module.detect({ window, unlocked: access, justUnlocked: opts.justUnlocked, now, durable, tagged, progress: opts.progress });
     } catch {
       continue;
     }
@@ -93,7 +102,9 @@ const evaluatePass = (
     if (verdict.r === 'miss') {
 
       const near = cfg?.proximity;
-      if (!near || !inSeason || !equipped || !inPlace) { continue; }
+      const clueEquipped = near?.requires === undefined ? equipped
+        : near.requires.every(n => access.has(n));
+      if (!near || !inSeason || !clueEquipped || !inPlace) { continue; }
       const typed = typedText(window);
 
       const map: Readonly<Record<string, string>> | null =
@@ -113,11 +124,14 @@ const evaluatePass = (
       continue;
     }
 
+    let attemptedText = verdict.r === 'unlock' ? verdict.matchedText : undefined;
     const freshVerdict = () => !verdict.keyLen || freshTyping(part => {
       try {
-        const match = module.detect({ window: part, unlocked: access, justUnlocked: opts.justUnlocked, now, durable, tagged });
-        return match.r === verdict.r && match.keyLen === verdict.keyLen
+        const match = module.detect({ window: part, unlocked: access, justUnlocked: opts.justUnlocked, now, durable, tagged, progress: opts.progress });
+        const matches = match.r === verdict.r && match.keyLen === verdict.keyLen
           && (match.r !== 'warm' || verdict.r !== 'warm' || (match.kind === verdict.kind && match.text === verdict.text));
+        if (matches && match.r === 'unlock') attemptedText = match.matchedText;
+        return matches;
       } catch { return false; }
     });
 
@@ -132,9 +146,14 @@ const evaluatePass = (
 
     if (!equipped) {
       if (!freshVerdict()) { continue; }
+
+      const matched = attemptedText;
+      const explanation = cfg?.gateExplanation ?? (matched && matched.length <= 256
+        && typedText(window).includes(matched) ? `You typed “${matched}”.` : undefined);
       out.early.push({
         n: manifest.n, keyLen: verdict.keyLen, kind: cfg?.gate ?? 'prerequisite',
-        explanation: cfg?.gateExplanation ?? 'An interaction you tried requires another discovery first.',
+        ...(cfg?.gateText ? { text: cfg.gateText } : {}),
+        ...(explanation ? { explanation } : {}),
       });
       continue;
     }
